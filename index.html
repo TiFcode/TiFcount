@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#6f43e8">
+  <title>TiFcount — Numără bulinele</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');
+
+    :root { --ink:#2e2850; --purple:#6f43e8; --purple-deep:#4c24bc; --gold:#ffc83d; --green:#129b58; --red:#d9304f; --paper:#fffdf6; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; min-height:100dvh; color:var(--ink); font-family:Fredoka,ui-rounded,system-ui,sans-serif; background:radial-gradient(circle at 8% 7%,#fff 0 10%,transparent 27%),radial-gradient(circle at 93% 88%,#ffe27e 0 8%,transparent 26%),linear-gradient(135deg,#eae3ff,#ecfaff 48%,#fff5d2); user-select:none; -webkit-user-select:none; }
+    main { width:min(1100px,100%); min-height:100vh; min-height:100dvh; margin:auto; padding:clamp(18px,4vw,42px) clamp(14px,4vw,40px) max(22px,env(safe-area-inset-bottom)); display:flex; flex-direction:column; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:clamp(18px,3vh,32px); }
+    h1 { margin:0; color:var(--purple-deep); font-size:clamp(29px,5vw,48px); line-height:1; }
+    .subtitle { margin:6px 0 0; font-size:clamp(15px,2.4vw,20px); color:#625d85; }
+    .scoreboard { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .score { min-width:104px; padding:9px 14px; border:3px solid; border-radius:19px; background:#fffdfb; box-shadow:0 5px 0 rgba(47,37,95,.12); text-align:center; font-size:clamp(15px,2.2vw,19px); font-weight:700; }
+    .score b { display:block; font-size:clamp(27px,4.2vw,42px); line-height:1; }
+    .good { color:var(--green); border-color:#66cd95; } .bad { color:var(--red); border-color:#f39aac; }
+    .game { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,.76fr); gap:clamp(16px,4vw,42px); flex:1; align-items:stretch; }
+    .panel { position:relative; min-height:clamp(350px,58vh,560px); overflow:hidden; border:5px solid rgba(255,255,255,.85); border-radius:34px; background:rgba(255,253,246,.8); box-shadow:0 12px 0 rgba(72,52,148,.12),0 20px 38px rgba(59,39,122,.13); }
+    .dots-panel { display:flex; flex-direction:column; }
+    .panel-label { position:relative; z-index:1; margin:17px auto 0; padding:7px 17px; border-radius:999px; color:#fff; background:var(--purple); box-shadow:0 4px 0 #4b28b3; font-size:clamp(17px,2.7vw,23px); font-weight:700; letter-spacing:.02em; }
+    .dots { position:relative; flex:1; min-height:290px; margin:10px 16px 18px; }
+    .dot { position:absolute; width:clamp(38px,7vw,70px); aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 32% 25%,#fff 0 7%,#ffdf66 8% 15%,#ff9f20 43%,#f26c11 100%); box-shadow:inset -6px -8px 0 rgba(187,71,0,.15),0 7px 0 rgba(140,64,12,.16); animation:pop .24s backwards cubic-bezier(.2,1.5,.4,1); }
+    .numbers-panel { display:flex; flex-direction:column; align-items:center; padding:18px; background:linear-gradient(155deg,rgba(255,255,255,.94),rgba(239,246,255,.82)); }
+    .numbers-panel .panel-label { background:#1784c7; box-shadow:0 4px 0 #0d6096; }
+    .number-list { width:100%; display:flex; flex:1; flex-direction:column; justify-content:center; gap:clamp(13px,3vh,24px); padding:18px 0 10px; }
+    .number { appearance:none; min-height:clamp(76px,13vh,125px); border:0; border-radius:27px; color:#fff; cursor:pointer; font:700 clamp(43px,8vw,80px)/1 Fredoka,sans-serif; text-shadow:0 4px 0 rgba(0,0,0,.13); box-shadow:0 8px 0 rgba(18,53,96,.26),0 12px 18px rgba(28,80,145,.18); transition:transform .12s,filter .12s; -webkit-tap-highlight-color:transparent; }
+    .number:nth-child(1) { background:linear-gradient(#55c8ff,#168bd6); } .number:nth-child(2) { background:linear-gradient(#ff8dc2,#e73f83); } .number:nth-child(3) { background:linear-gradient(#a77cff,#6940dd); }
+    .number:hover { filter:brightness(1.06); transform:translateY(-3px); } .number:active { transform:translateY(6px) scale(.985); box-shadow:0 2px 0 rgba(18,53,96,.26),0 5px 10px rgba(28,80,145,.18); }
+    .number:focus-visible { outline:5px solid var(--gold); outline-offset:4px; }
+    .feedback { position:fixed; z-index:10; inset:0; display:grid; place-items:center; pointer-events:none; opacity:0; transition:opacity .16s; }
+    .feedback.show { opacity:1; } .message { padding:18px 28px; border-radius:28px; background:rgba(255,255,255,.95); font-size:clamp(38px,8vw,80px); font-weight:700; text-align:center; transform:scale(.78); transition:transform .2s cubic-bezier(.2,1.6,.35,1); box-shadow:0 12px 35px rgba(31,24,76,.24); }
+    .feedback.show .message { transform:scale(1); } .feedback.correct .message { color:var(--green); border:6px solid #77dc9d; } .feedback.wrong .message { color:var(--red); border:6px solid #ff9cad; }
+    .firework { position:absolute; width:6px; height:6px; border-radius:50%; left:50%; top:50%; background:var(--c); animation:burst .82s both ease-out; transform:translate(-50%,-50%) rotate(var(--r)) translateY(-10px); }
+    @keyframes pop { from { transform:scale(0); } } @keyframes burst { to { transform:translate(-50%,-50%) rotate(var(--r)) translateY(var(--d)); opacity:0; } }
+    @media (max-width:700px) { header { align-items:flex-start; flex-direction:column; } .scoreboard { width:100%; justify-content:flex-start; } .score { flex:1; min-width:0; } .game { grid-template-columns:1fr; } .panel { min-height:300px; } .numbers-panel { min-height:310px; } .number-list { flex-direction:row; gap:10px; } .number { min-width:0; flex:1; min-height:112px; border-radius:22px; } }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div><h1>TiFcount</h1><p class="subtitle">Numără bulinele și alege cifra corectă!</p></div>
+      <section class="scoreboard" aria-label="Scor"><div class="score good">Corecte <b id="correct">0</b></div><div class="score bad">Incorecte <b id="wrong">0</b></div></section>
+    </header>
+    <section class="game" aria-label="Joc de numărat">
+      <section class="panel dots-panel" aria-label="Buline de numărat"><span class="panel-label">CÂTE BULINE SUNT?</span><div id="dots" class="dots" aria-live="polite"></div></section>
+      <section class="panel numbers-panel" aria-label="Alege cifra"><span class="panel-label">ALEGE CIFRA</span><div id="numbers" class="number-list"></div></section>
+    </section>
+  </main>
+  <div id="feedback" class="feedback" aria-live="assertive"><div id="message" class="message"></div></div>
+  <script>
+    (() => {
+      const dotsEl=document.querySelector('#dots'), numbersEl=document.querySelector('#numbers');
+      const correctEl=document.querySelector('#correct'), wrongEl=document.querySelector('#wrong');
+      const feedback=document.querySelector('#feedback'), message=document.querySelector('#message');
+      let answer=0, correct=0, wrong=0, locked=false, audio=null;
+      const random=(min,max)=>Math.floor(Math.random()*(max-min+1))+min;
+      const shuffle=list=>list.sort(()=>Math.random()-.5);
+      function sound(isCorrect) {
+        const Ctx=window.AudioContext||window.webkitAudioContext; if(!Ctx) return;
+        audio ||= new Ctx(); if(audio.state==='suspended') audio.resume(); const now=audio.currentTime;
+        const notes=isCorrect?[523,659,784,1047]:[250,180];
+        notes.forEach((freq,index)=>{ const osc=audio.createOscillator(), gain=audio.createGain(); osc.type=isCorrect?'sawtooth':'triangle'; osc.frequency.setValueAtTime(freq,now+index*.11); gain.gain.setValueAtTime(.0001,now+index*.11); gain.gain.exponentialRampToValueAtTime(isCorrect?.17:.13,now+index*.11+.015); gain.gain.exponentialRampToValueAtTime(.0001,now+index*.11+(isCorrect?.22:.3)); osc.connect(gain).connect(audio.destination); osc.start(now+index*.11); osc.stop(now+index*.11+(isCorrect?.25:.34)); });
+      }
+      function placeDots(count) {
+        dotsEl.innerHTML=''; const placed=[]; const cols=Math.ceil(Math.sqrt(count)); const rows=Math.ceil(count/cols);
+        for(let i=0;i<count;i++) { const col=i%cols,row=Math.floor(i/cols); let x=((col+.5)/cols)*76+12, y=((row+.5)/rows)*68+14; x+=random(-6,6); y+=random(-7,7); placed.push([x,y]); }
+        shuffle(placed).forEach(([x,y],i)=>{ const dot=document.createElement('span'); dot.className='dot'; dot.style.left=x+'%'; dot.style.top=y+'%'; dot.style.animationDelay=(i*.035)+'s'; dotsEl.append(dot); });
+        dotsEl.setAttribute('aria-label',`${count} buline`);
+      }
+      function nextRound() {
+        locked=false; answer=random(1,10); placeDots(answer);
+        const options=new Set([answer]); while(options.size<3) options.add(random(1,10));
+        numbersEl.innerHTML=''; shuffle([...options]).forEach(number=>{ const button=document.createElement('button'); button.className='number'; button.type='button'; button.textContent=number; button.setAttribute('aria-label',`Alege cifra ${number}`); button.addEventListener('click',()=>choose(number)); numbersEl.append(button); });
+      }
+      function fireworks() { for(let i=0;i<34;i++) { const spark=document.createElement('i'); spark.className='firework'; spark.style.setProperty('--r',random(0,359)+'deg'); spark.style.setProperty('--d',random(95,280)+'px'); spark.style.setProperty('--c',['#ff3b83','#ffc629','#35c768','#5a70ff','#ff7b28'][i%5]); feedback.append(spark); setTimeout(()=>spark.remove(),900); } }
+      function choose(value) { if(locked) return; locked=true; const ok=value===answer; if(ok){correct++;correctEl.textContent=correct;message.textContent='BRAVO!!! 😊';feedback.className='feedback correct show';fireworks();}else{wrong++;wrongEl.textContent=wrong;message.textContent='Incorect :(';feedback.className='feedback wrong show';} sound(ok); setTimeout(()=>{feedback.className='feedback';feedback.querySelectorAll('.firework').forEach(x=>x.remove());nextRound();},ok?1350:1050); }
+      nextRound();
+    })();
+  </script>
+</body>
+</html>
