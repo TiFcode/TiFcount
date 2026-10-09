@@ -37,7 +37,31 @@
     .feedback.show .message { transform:scale(1); } .feedback.correct .message { color:var(--green); border:6px solid #77dc9d; } .feedback.wrong .message { color:var(--red); border:6px solid #ff9cad; }
     .firework { position:absolute; width:6px; height:6px; border-radius:50%; left:50%; top:50%; background:var(--c); animation:burst .82s both ease-out; transform:translate(-50%,-50%) rotate(var(--r)) translateY(-10px); }
     @keyframes pop { from { transform:scale(0); } } @keyframes burst { to { transform:translate(-50%,-50%) rotate(var(--r)) translateY(var(--d)); opacity:0; } }
-    @media (max-width:700px) { header { align-items:flex-start; flex-direction:column; } .scoreboard { width:100%; justify-content:flex-start; } .score { flex:1; min-width:0; } .game { grid-template-columns:1fr; } .panel { min-height:300px; } .numbers-panel { min-height:310px; } .number-list { flex-direction:row; gap:10px; } .number { min-width:0; flex:1; min-height:112px; border-radius:22px; } }
+    /* On a phone the actual game remains a left/right pair: dots on the left,
+       choices on the right.  Everything is sized from the available viewport
+       height so a child never has to scroll to reach an answer. */
+    @media (max-width:700px) {
+      body { overflow:hidden; }
+      main { height:100dvh; min-height:0; padding:max(10px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom)); }
+      header { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); align-items:center; gap:9px; margin-bottom:10px; }
+      header > div, .scoreboard, .panel { min-width:0; }
+      h1 { font-size:clamp(25px,8vw,34px); }
+      .subtitle { margin-top:3px; font-size:clamp(12px,3.8vw,16px); line-height:1.15; }
+      .scoreboard { width:100%; gap:6px; flex-wrap:nowrap; }
+      .score { flex:1; min-width:0; padding:6px 5px; border-width:2px; border-radius:13px; box-shadow:0 3px 0 rgba(47,37,95,.12); font-size:12px; }
+      .score b { font-size:25px; }
+      .game { min-height:0; grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr); gap:9px; }
+      .panel { min-height:0; border-width:3px; border-radius:22px; box-shadow:0 7px 0 rgba(72,52,148,.12),0 12px 24px rgba(59,39,122,.13); }
+      .panel-label { max-width:calc(100% - 12px); margin-top:10px; padding:5px 8px; font-size:clamp(11px,3.5vw,16px); box-shadow:0 3px 0 #4b28b3; text-align:center; }
+      .dots { min-height:0; margin:8px 9px 12px; }
+      .dot { width:clamp(24px,8.5vw,38px); box-shadow:inset -4px -5px 0 rgba(187,71,0,.15),0 4px 0 rgba(140,64,12,.16); }
+      .numbers-panel { padding:8px; }
+      .numbers-panel .panel-label { box-shadow:0 3px 0 #0d6096; }
+      .number-list { min-height:0; gap:clamp(8px,2vh,15px); padding:10px 0 5px; }
+      .number { min-height:0; flex:1; border-radius:17px; font-size:clamp(37px,13vw,58px); box-shadow:0 5px 0 rgba(18,53,96,.26),0 8px 12px rgba(28,80,145,.18); }
+      .number:active { transform:translateY(4px) scale(.985); box-shadow:0 1px 0 rgba(18,53,96,.26); }
+      .message { padding:14px 18px; border-radius:21px; font-size:clamp(31px,10vw,52px); }
+    }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
   </style>
 </head>
